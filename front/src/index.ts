@@ -1,7 +1,9 @@
 import express from "express";
 import path from "path";
+import { SERVER_PORT } from "./config";
+
 const app = express();
-const port = 8081;
+const port = SERVER_PORT;
 
 app.use(express.static("static"));
 
