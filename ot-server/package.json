@@ -1,5 +1,5 @@
 {
-  "name": "scalable-ot",
+  "name": "scalable-ot-server",
   "version": "1.0.0",
   "description": "A scalable concurrent collaboration framework based on Operational Transformation (OT)",
   "main": "dist/index.js",
@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/BrotherJing/scalable-ot#readme",
   "dependencies": {
+    "scalable-ot-proto": "^1.0.0",
     "@teamwork/websocket-json-stream": "^2.0.0",
     "express": "^4.17.1",
     "ws": "^7.1.2"

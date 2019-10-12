@@ -37,10 +37,10 @@ module.exports = {
       ]
   },
 
-  optimization: {
-      splitChunks: {
-          chunks: "all"
-      },
-      usedExports: true
-  },
+//   optimization: {
+//       splitChunks: {
+//           chunks: "all"
+//       },
+//       usedExports: true
+//   },
 };
