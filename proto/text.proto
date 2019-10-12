@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+enum Type {
+  RETAIN = 0;
+  INSERT = 1;
+  DELETE = 2;
+  MULTI = 3;
+}
+
+message Command {
+  Type type = 1;
+  oneof payload {
+    int32 retain = 2;
+    string insert = 3;
+    Delete delete = 4;
+    Multiple multiple = 5;
+  }
+}
+
+message Delete {
+  int32 delete = 1;
+}
+
+message Multiple {
+  repeated Command ops = 1;
+}

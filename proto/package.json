@@ -1,0 +1,19 @@
+{
+  "name": "scalable-ot-proto",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "bash gen.sh",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "google-protobuf": "^3.10.0"
+  },
+  "devDependencies": {
+    "@types/google-protobuf": "^3.7.2",
+    "ts-protoc-gen": "^0.11.0"
+  }
+}
