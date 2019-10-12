@@ -8,6 +8,13 @@ enum Type {
 }
 
 message Command {
+  int32 version = 1;
+  string sid = 2;
+  int32 seq = 3;
+  Operation op = 4;
+}
+
+message Operation {
   Type type = 1;
   oneof payload {
     int32 retain = 2;
@@ -22,5 +29,10 @@ message Delete {
 }
 
 message Multiple {
-  repeated Command ops = 1;
+  repeated Operation ops = 1;
+}
+
+message Snapshot {
+  int32 version = 1;
+  string data = 2;
 }
