@@ -2,3 +2,5 @@ front/dist
 front/node_modules
 ot-server/dist
 ot-server/node_modules
+node_modules
+
