@@ -85,6 +85,7 @@ class StringBinding extends TextDiffBinding {
     op.setType(Type.DELETE);
     let del = new Delete();
     del.setDelete(text.length);
+    op.setDelete(del);
     ops.push(op);
     this.doc.submitOp(this.createMultiOp_(ops), this);
   }

@@ -73,7 +73,7 @@ class Doc extends EventEmitter {
     if (!op) {
       return;
     }
-    if (op.getSeq() == null) {
+    if (op.getSeq() === 0) {
       op.setSeq(this.connection.seq++);
     }
     op.setSid(this.connection.sid);
@@ -81,7 +81,7 @@ class Doc extends EventEmitter {
   }
 
   applyCommand_(command: Command, source: any) {
-    if (!this.data) {
+    if (this.data == null) {
       return;
     }
     this.data = type.apply(this.data, toTextOp(command.getOp()));
