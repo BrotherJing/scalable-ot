@@ -61,6 +61,9 @@ function fromTextOpSingle_(textOp: any): Operation {
 }
 
 export function fromTextOp(textOp: any[]): Operation {
+  if (textOp.length === 1) {
+    return fromTextOpSingle_(textOp[0]);
+  }
   const res = new Operation();
   res.setType(Type.MULTI);
   const multiple = new Multiple();

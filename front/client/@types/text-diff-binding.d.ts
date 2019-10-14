@@ -3,6 +3,7 @@
 declare module 'text-diff-binding' {
   
   class text_diff_binding {
+    element: Element;
     constructor(element: Element);
 
     onInput(): void;

@@ -11,14 +11,11 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({server});
 wss.on("connection", (ws) => {
   ws.on("message", (chunk) => {
+    const bytes = Array.prototype.slice.call(chunk);
+    const command = Command.deserializeBinary(bytes);
     // tslint:disable-next-line:no-console
-    console.log("received: %s", chunk);
+    console.log("received command: %s", JSON.stringify(command.toObject()));
   });
-  const message = new Command();
-  message.setType(Type.INSERT);
-  message.setInsert("hello");
-  const bytes = message.serializeBinary();
-  ws.send(bytes);
 });
 
 server.listen(OT_SERVER_PORT);

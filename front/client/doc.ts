@@ -1,18 +1,21 @@
 import {type} from 'ot-text';
 import {Command, Operation, Snapshot} from 'scalable-ot-proto/gen/text_pb';
 import { toTextOp, fromTextOp } from './util';
+import {EventEmitter} from 'events';
+import Connection from './connection';
 
-class Doc {
-  ws: WebSocket;
+class Doc extends EventEmitter {
+  connection: Connection;
   id: string;
-  version: number|undefined;
+  version: number;
   data: string|undefined;
   inflightOp: Command|undefined;
   pendingOps: Command[];
-  constructor(ws: WebSocket, id: string) {
-    this.ws = ws;
+  constructor(connection: Connection, id: string) {
+    super();
+    this.connection = connection;
     this.id = id;
-    this.version = undefined;
+    this.version = 0;
     this.data = undefined;
     this.inflightOp = undefined;
     this.pendingOps = [];
@@ -21,23 +24,23 @@ class Doc {
   init(snapshot: Snapshot) {
     this.version = snapshot.getVersion();
     this.data = snapshot.getData();
+    this.bindEvent_();
   }
 
   bindEvent_() {
-    this.ws.onmessage = (message) => {
-      const command = Command.deserializeBinary((new Uint8Array(message.data)));
-      
-    };    
+    this.connection.on('command', (command) => {
+      this.handleCommand_(command);
+    });
   }
 
   handleCommand_(command: Command) {
     if (this.inflightOp &&
       this.inflightOp.getSid() === command.getSid() &&
       this.inflightOp.getSeq() === command.getSeq()) {
-        //TODO: ack
+        this.acknowledgeOp_(command);
         return;
       }
-    if (this.version == null || command.getVersion() > this.version) {
+    if (command.getVersion() > this.version) {
       //TODO: catch up
       return;
     }
@@ -52,14 +55,37 @@ class Doc {
       Doc.transformX(this.pendingOps[i], command);
     }
     this.version++;
-    this.applyCommand_(command);
+    this.applyCommand_(command, false);
   }
 
-  applyCommand_(command: Command) {
+  acknowledgeOp_(command: Command) {
+    this.version++;
+    this.inflightOp = undefined;
+    this.sendNextCommand_();
+  }
+
+  sendNextCommand_() {
+    if (this.pendingOps.length === 0 || this.inflightOp) {
+      return;
+    }
+    this.inflightOp = this.pendingOps.shift();
+    let op = this.inflightOp;
+    if (!op) {
+      return;
+    }
+    if (op.getSeq() == null) {
+      op.setSeq(this.connection.seq++);
+    }
+    op.setSid(this.connection.sid);
+    this.connection.sendOp(op);
+  }
+
+  applyCommand_(command: Command, source: any) {
     if (!this.data) {
       return;
     }
     this.data = type.apply(this.data, toTextOp(command.getOp()));
+    this.emit('op', command, source);
   }
 
   static transformX(clientCmd: Command, serverCmd: Command) {
@@ -76,6 +102,31 @@ class Doc {
 
     clientCmd.setOp(fromTextOp(clientOpTextNew));
     serverCmd.setOp(fromTextOp(serverOpTextNew));
+  }
+
+  submitOp(op: Operation, source: any) {
+    if (!source) {
+      source = true;
+    }
+    let command = new Command();
+    command.setOp(fromTextOp(type.normalize(toTextOp(op))));
+    if (this.tryCompose_(command)) {
+      return;
+    }
+    this.pendingOps.push(command);
+    setTimeout(() => {
+      this.sendNextCommand_();
+    }, 0);
+    this.applyCommand_(command, source);
+  }
+
+  tryCompose_(command: Command): boolean {
+    let last = this.pendingOps[this.pendingOps.length - 1];
+    if (!last) {
+      return false;
+    }
+    last.setOp(fromTextOp(type.compose(toTextOp(last.getOp()), toTextOp(command.getOp()))));
+    return true;
   }
 }
 

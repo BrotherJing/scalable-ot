@@ -8,7 +8,7 @@ declare module 'ot-text' {
       compose: (op1: any[], op2: any[]) => any[];
       create: (initial: string) => string;
       name: string;
-      normalize: any;
+      normalize: (op: any[]) => any[];
       selectionEq: any;
       transform: (op: any[], otherOp: any[], side: 'left'|'right') => any[];
       transformSelection: any;
