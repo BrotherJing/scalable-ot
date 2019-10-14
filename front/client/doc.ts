@@ -77,6 +77,7 @@ class Doc extends EventEmitter {
       op.setSeq(this.connection.seq++);
     }
     op.setSid(this.connection.sid);
+    op.setVersion(this.version);
     this.connection.sendOp(op);
   }
 
