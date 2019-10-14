@@ -10,7 +10,7 @@ const backend = new Backend();
 
 const wss = new WebSocket.Server({server});
 wss.on("connection", (ws) => {
-  const client = backend.listen(ws);
+  backend.listen(ws);
 });
 
 server.listen(OT_SERVER_PORT);

@@ -5,6 +5,7 @@ import Backend from "./backend";
 class Client {
   public backend: Backend;
   public ws: WebSocket;
+  public sid: string;
   constructor(backend: Backend, ws: WebSocket) {
     this.backend = backend;
     this.ws = ws;
@@ -20,6 +21,9 @@ class Client {
   }
 
   public handleCommand_(command: Command) {
+    if (!this.sid) {
+      this.sid = command.getSid();
+    }
     this.backend.submit(this, command, (err, ops) => {
       if (err) {
         return;
@@ -27,20 +31,20 @@ class Client {
       const ack = new Command();
       ack.setSeq(command.getSeq());
       ack.setSid(command.getSid());
-      // version might change
+      // version might change during ot
       ack.setVersion(command.getVersion());
       this.sendOps_(ops);
-      this.sendOp_(ack);
+      this.sendOp(ack);
     });
   }
 
   public sendOps_(ops: Command[]) {
     for (const op of ops) {
-      this.sendOp_(op);
+      this.sendOp(op);
     }
   }
 
-  public sendOp_(command: Command) {
+  public sendOp(command: Command) {
     this.ws.send(command.serializeBinary());
   }
 }

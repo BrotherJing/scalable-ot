@@ -30,10 +30,12 @@ class SubmitRequest {
   }
 
   public async apply() {
-    // TODO: broadcast
+    // broadcast
+    this.backend.sendToAll(this.command, true);
 
     // TODO: apply to snapshot
 
+    // store op and snapshot
     await this.backend.db.commit(this.command);
   }
 }
