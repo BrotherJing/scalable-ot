@@ -31,15 +31,16 @@ class StringBinding extends TextDiffBinding {
   }
 
   exec_(op: Operation) {
-    // since we separate retain and ins/del operation, op should always be multiple.
-    if (!op.hasMultiple()) {
-      return;
+    let ops;
+    if (op.hasMultiple()) {
+      let multiple = op.getMultiple();
+      if (!multiple) {
+        return;
+      }
+      ops = multiple.getOpsList();
+    } else {
+      ops = [op];
     }
-    let multiple = op.getMultiple();
-    if (!multiple) {
-      return;
-    }
-    let ops = multiple.getOpsList();
     let index = 0;
     for (let op of ops) {
       switch(op.getType()) {

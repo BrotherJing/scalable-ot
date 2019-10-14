@@ -112,6 +112,7 @@ class Doc extends EventEmitter {
     let command = new Command();
     command.setOp(fromTextOp(type.normalize(toTextOp(op))));
     if (this.tryCompose_(command)) {
+      this.applyCommand_(command, source);
       return;
     }
     this.pendingOps.push(command);
