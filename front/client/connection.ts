@@ -18,7 +18,10 @@ class Connection extends EventEmitter {
     this.ws.onmessage = (message) => {
       const command = Command.deserializeBinary((new Uint8Array(message.data)));
       this.emit('command', command);
-    };    
+    };
+    this.ws.onopen = () => {
+      this.emit('open');
+    }
   }
 
   sendOp(command: Command) {

@@ -31,6 +31,9 @@ class Doc extends EventEmitter {
     this.connection.on('command', (command) => {
       this.handleCommand_(command);
     });
+    this.connection.on('open', () => {
+      this.sendInit_();
+    })
   }
 
   handleCommand_(command: Command) {
@@ -76,6 +79,7 @@ class Doc extends EventEmitter {
     if (op.getSeq() === 0) {
       op.setSeq(this.connection.seq++);
     }
+    op.setDocid(this.id);
     op.setSid(this.connection.sid);
     op.setVersion(this.version);
     this.connection.sendOp(op);
@@ -129,6 +133,18 @@ class Doc extends EventEmitter {
     }
     last.setOp(fromTextOp(type.compose(toTextOp(last.getOp()), toTextOp(command.getOp()))));
     return true;
+  }
+
+  /**
+   * When connection open, send init message in order to
+   * receive broadcast message for this document.
+   */
+  private sendInit_() {
+    let command = new Command();
+    command.setInit(true);
+    command.setDocid(this.id);
+    command.setSid(this.connection.sid);
+    this.connection.sendOp(command);
   }
 }
 
