@@ -5,35 +5,45 @@ import Client from "./client";
 import DB from "./db";
 import MemoryDB from "./db/memory";
 import Exception from "./model/exception";
+import SubmitQueue from "./submit-queue";
 import SubmitRequest from "./submit-request";
 
 class Backend extends EventEmitter {
   public db: DB;
-  public clients: Client[];
+  public submitQueue: SubmitQueue;
+  public clients: {[key: string]: Client[]};
   constructor() {
     super();
     this.db = new MemoryDB();
-    this.clients = [];
+    this.submitQueue = new SubmitQueue();
+    this.clients = {};
   }
 
   public listen(ws: WebSocket): Client {
     const client = new Client(this, ws);
-    this.clients.push(client);
     return client;
   }
 
-  public async submit(client: Client, command: Command, callback: (err: Exception, ops: Command[]) => void) {
-    const submitRequest = new SubmitRequest(client, this, command, callback);
-    await submitRequest.submit();
+  public register(docId: string, client: Client) {
+    this.getClients_(docId).push(client);
+  }
+
+  public submit(client: Client, command: Command, callback: (err: Exception, ops: Command[]) => void) {
+    this.submitQueue.submit(command.getDocid(), new SubmitRequest(client, this, command, callback));
   }
 
   public sendToAll(command: Command, excludeSelf: boolean) {
-    this.clients.forEach((client) => {
+    this.getClients_(command.getDocid()).forEach((client) => {
       if (excludeSelf && client.sid === command.getSid()) {
         return;
       }
       client.sendOp(command);
     });
+  }
+
+  private getClients_(docId: string) {
+    this.clients[docId] = this.clients[docId] || [];
+    return this.clients[docId];
   }
 }
 

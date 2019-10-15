@@ -6,6 +6,7 @@ class Client {
   public backend: Backend;
   public ws: WebSocket;
   public sid: string;
+  public docId: string;
   constructor(backend: Backend, ws: WebSocket) {
     this.backend = backend;
     this.ws = ws;
@@ -16,7 +17,11 @@ class Client {
     this.ws.on("message", (data) => {
       const bytes = Array.prototype.slice.call(data);
       const command = Command.deserializeBinary(bytes);
-      this.handleCommand_(command);
+      if (command.getInit()) {
+        this.handleInit_(command);
+      } else {
+        this.handleCommand_(command);
+      }
     });
   }
 
@@ -29,6 +34,7 @@ class Client {
         return;
       }
       const ack = new Command();
+      ack.setDocid(command.getDocid());
       ack.setSeq(command.getSeq());
       ack.setSid(command.getSid());
       // version might change during ot
@@ -46,6 +52,13 @@ class Client {
 
   public sendOp(command: Command) {
     this.ws.send(command.serializeBinary());
+  }
+
+  private handleInit_(command: Command) {
+    this.docId = command.getDocid();
+    this.sid = command.getSid();
+
+    this.backend.register(this.docId, this);
   }
 }
 

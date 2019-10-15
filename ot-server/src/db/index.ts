@@ -1,7 +1,7 @@
 import { Command } from "scalable-ot-proto/gen/text_pb";
 
 class DB {
-  public async getOps(from: number): Promise<Command[]> {
+  public async getOps(docId: string, from: number): Promise<Command[]> {
     throw new Error();
   }
 

@@ -2,7 +2,7 @@ import express from "express";
 import http from "http";
 import WebSocket from "ws";
 import Backend from "./backend";
-import { OT_SERVER_PORT } from "./config";
+import { OT_SERVER_PORT } from "./const/config";
 
 const app = express();
 const server = http.createServer(app);

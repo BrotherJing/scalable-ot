@@ -18,7 +18,8 @@ class SubmitRequest {
   }
 
   public async submit() {
-    const conflicts = await this.backend.db.getOps(this.command.getVersion());
+    const docId = this.command.getDocid();
+    const conflicts = await this.backend.db.getOps(docId, this.command.getVersion());
     if (conflicts.length > 0) {
       // transform command by ops before apply
       for (const conflict of conflicts) {
