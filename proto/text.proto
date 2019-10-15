@@ -8,10 +8,12 @@ enum Type {
 }
 
 message Command {
-  int32 version = 1;
+  string docId = 1;
   string sid = 2;
   int32 seq = 3;
-  Operation op = 4;
+  int32 version = 4;
+  Operation op = 5;
+  bool init = 6;
 }
 
 message Operation {
