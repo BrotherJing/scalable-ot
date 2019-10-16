@@ -6,11 +6,13 @@ class Connection extends EventEmitter {
   ws: WebSocket;
   sid: string;
   seq: number;
+  open: boolean;
   constructor(ws: WebSocket) {
     super();
     this.ws = ws;
     this.sid = short.generate();
     this.seq = 0;
+    this.open = false;
     this.bindEvent_();
   }
 
@@ -20,6 +22,7 @@ class Connection extends EventEmitter {
       this.emit('command', command);
     };
     this.ws.onopen = () => {
+      this.open = true;
       this.emit('open');
     }
   }

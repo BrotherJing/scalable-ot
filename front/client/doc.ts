@@ -6,12 +6,12 @@ import Connection from './connection';
 
 class Doc extends EventEmitter {
   connection: Connection;
-  id: string;
+  id: string|undefined;
   version: number;
   data: string|undefined;
   inflightOp: Command|undefined;
   pendingOps: Command[];
-  constructor(connection: Connection, id: string) {
+  constructor(connection: Connection, id?: string) {
     super();
     this.connection = connection;
     this.id = id;
@@ -19,21 +19,27 @@ class Doc extends EventEmitter {
     this.data = undefined;
     this.inflightOp = undefined;
     this.pendingOps = [];
+    this.bindEvent_();
   }
 
   init(snapshot: Snapshot) {
+    this.id = snapshot.getDocid();
     this.version = snapshot.getVersion();
     this.data = snapshot.getData();
-    this.bindEvent_();
+
+    if (this.connection.open) {
+      this.sendInit_();
+    } else {
+      this.connection.on('open', () => {
+        this.sendInit_();
+      });
+    }
   }
 
   bindEvent_() {
     this.connection.on('command', (command) => {
       this.handleCommand_(command);
     });
-    this.connection.on('open', () => {
-      this.sendInit_();
-    })
   }
 
   handleCommand_(command: Command) {
@@ -68,14 +74,16 @@ class Doc extends EventEmitter {
   }
 
   sendNextCommand_() {
+    if (!this.id) {
+      // doc not initialized
+      return;
+    }
     if (this.pendingOps.length === 0 || this.inflightOp) {
+      // nothing to send
       return;
     }
-    this.inflightOp = this.pendingOps.shift();
+    this.inflightOp = this.pendingOps.shift() as Command;
     let op = this.inflightOp;
-    if (!op) {
-      return;
-    }
     if (op.getSeq() === 0) {
       op.setSeq(this.connection.seq++);
     }
@@ -140,6 +148,9 @@ class Doc extends EventEmitter {
    * receive broadcast message for this document.
    */
   private sendInit_() {
+    if (!this.id) {
+      return;
+    }
     let command = new Command();
     command.setInit(true);
     command.setDocid(this.id);
