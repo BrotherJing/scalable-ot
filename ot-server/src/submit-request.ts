@@ -34,7 +34,8 @@ class SubmitRequest {
     // broadcast
     this.backend.sendToAll(this.command, true);
 
-    // TODO: apply to snapshot
+    // TODO: replace with db change stream
+    this.backend.mq.sendOp(this.command);
 
     // store op and snapshot
     await this.backend.db.commit(this.command);
