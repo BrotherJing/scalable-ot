@@ -1,5 +1,10 @@
 syntax = "proto3";
 
+package text;
+
+option java_package = "com.brotherjing.proto";
+option java_outer_classname = "TextProto";
+
 enum Type {
   RETAIN = 0;
   INSERT = 1;
@@ -35,6 +40,7 @@ message Multiple {
 }
 
 message Snapshot {
-  int32 version = 1;
-  string data = 2;
+  string docId = 1;
+  int32 version = 2;
+  string data = 3;
 }
