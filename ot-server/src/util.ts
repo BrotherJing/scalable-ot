@@ -1,4 +1,4 @@
-import {Delete, Multiple, Operation, Type} from "scalable-ot-proto/gen/text_pb";
+import {Command, Delete, Multiple, Operation, Type} from "scalable-ot-proto/gen/text_pb";
 
 function toTextOpSingle_(op: Operation): any {
   switch (op.getType()) {
@@ -70,4 +70,16 @@ export function fromTextOp(textOp: any[]): Operation {
   multiple.setOpsList(textOp.map(fromTextOpSingle_));
   res.setMultiple(multiple);
   return res;
+}
+
+export function fromCommandDto(dto: any): Command {
+  return Command.deserializeBinary(dto.payload);
+}
+
+export function toCommandDto(command: Command): any {
+  return {
+    docId: command.getDocid(),
+    payload: command.serializeBinary(),
+    version: command.getVersion(),
+  };
 }

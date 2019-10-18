@@ -3,9 +3,10 @@ import { Command } from "scalable-ot-proto/gen/text_pb";
 import WebSocket from "ws";
 import Client from "./client";
 import DB from "./db";
-import Kafka from "./db/kafka";
 import MemoryDB from "./db/memory";
+import MongoDB from "./db/mongodb";
 import Exception from "./model/exception";
+import Kafka from "./mq/kafka";
 import SubmitQueue from "./submit-queue";
 import SubmitRequest from "./submit-request";
 
@@ -16,7 +17,7 @@ class Backend extends EventEmitter {
   public clients: {[key: string]: Client[]};
   constructor() {
     super();
-    this.db = new MemoryDB();
+    this.db = new MongoDB();
     this.mq = new Kafka();
     this.submitQueue = new SubmitQueue();
     this.clients = {};
