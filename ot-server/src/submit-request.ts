@@ -1,17 +1,14 @@
 import { Command } from "scalable-ot-proto/gen/text_pb";
 import Backend from "./backend";
-import Client from "./client";
 import Exception from "./model/exception";
 import {transform} from "./ot";
 
 class SubmitRequest {
-  public client: Client;
   public backend: Backend;
   public command: Command;
-  public callback: (err: Exception, ops: Command[]) => void;
-  constructor(client: Client, backend: Backend, command: Command,
-              callback: (err: Exception, ops: Command[]) => void) {
-      this.client = client;
+  public callback?: (err: Exception, ops: Command[]) => void;
+  constructor(backend: Backend, command: Command,
+              callback?: (err: Exception, ops: Command[]) => void) {
       this.backend = backend;
       this.command = command;
       this.callback = callback;
@@ -27,7 +24,9 @@ class SubmitRequest {
       }
     }
     await this.apply();
-    this.callback(undefined, conflicts);
+    if (this.callback) {
+      this.callback(undefined, conflicts);
+    }
   }
 
   public async apply() {
@@ -37,7 +36,7 @@ class SubmitRequest {
     // TODO: replace with db change stream
     this.backend.mq.sendOp(this.command);
 
-    // store op and snapshot
+    // store revision
     await this.backend.db.commit(this.command);
   }
 }

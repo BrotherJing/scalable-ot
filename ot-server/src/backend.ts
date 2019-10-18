@@ -18,7 +18,7 @@ class Backend extends EventEmitter {
   constructor() {
     super();
     this.db = new MongoDB();
-    this.mq = new Kafka();
+    this.mq = new Kafka(this);
     this.submitQueue = new SubmitQueue();
     this.clients = {};
   }
@@ -32,8 +32,8 @@ class Backend extends EventEmitter {
     this.getClients_(docId).push(client);
   }
 
-  public submit(client: Client, command: Command, callback: (err: Exception, ops: Command[]) => void) {
-    this.submitQueue.submit(command.getDocid(), new SubmitRequest(client, this, command, callback));
+  public submit(command: Command, callback?: (err: Exception, ops: Command[]) => void) {
+    this.submitQueue.submit(command.getDocid(), new SubmitRequest(this, command, callback));
   }
 
   public sendToAll(command: Command, excludeSelf: boolean) {

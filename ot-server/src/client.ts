@@ -29,7 +29,7 @@ class Client {
     if (!this.sid) {
       this.sid = command.getSid();
     }
-    this.backend.submit(this, command, (err, ops) => {
+    this.backend.submit(command, (err, ops) => {
       if (err) {
         return;
       }

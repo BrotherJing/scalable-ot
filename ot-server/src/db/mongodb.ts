@@ -1,15 +1,14 @@
 // tslint:disable:no-console
 
-import {Db, MongoClient} from "mongodb";
+import {Binary, Db, MongoClient} from "mongodb";
 import { Command } from "scalable-ot-proto/gen/text_pb";
 import DB from ".";
 import { DB_NAME, MONGODB_PORT } from "../const/config";
-import { fromCommandDto, toCommandDto } from "../util";
 
 /**
  * The collection name, mapped from java dto class name.
  */
-const COLLECTION_NAME_OP = "CommandDto";
+const COLLECTION_NAME_OP = "commandDto";
 
 class MongoDB extends DB {
   public client: MongoClient;
@@ -39,8 +38,20 @@ class MongoDB extends DB {
   public async commit(op: Command) {
     await this.connectPromise;
     const collection = this.db.collection(COLLECTION_NAME_OP);
-    await collection.insert(toCommandDto(op));
+    await collection.insertOne(toCommandDto(op));
   }
+}
+
+function fromCommandDto(dto: any): Command {
+  return Command.deserializeBinary(dto.payload);
+}
+
+function toCommandDto(command: Command): any {
+  return {
+    docId: command.getDocid(),
+    payload: new Binary(Buffer.from(command.serializeBinary())),
+    version: command.getVersion(),
+  };
 }
 
 export default MongoDB;
