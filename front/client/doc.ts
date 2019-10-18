@@ -111,7 +111,8 @@ class Doc extends EventEmitter {
     op.setDocid(this.id);
     op.setSid(this.connection.sid);
     op.setVersion(this.version);
-    this.connection.sendOp(op);
+    // this.connection.sendOp(op);
+    IO.getInstance().save(this.id, op);
   }
 
   applyCommand_(command: Command, source: any) {

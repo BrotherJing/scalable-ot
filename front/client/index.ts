@@ -4,7 +4,6 @@ import { OT_SERVER_PORT } from "./const/config";
 import Connection from "./connection";
 import Doc from "./doc";
 import StringBinding from "./string-binding";
-import IO from "./io";
 
 const socket = new WebSocket(`ws://localhost:${OT_SERVER_PORT}`);
 socket.binaryType = 'arraybuffer';

@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { API_SERVER_PORT } from './const/config';
-import { Snapshot, Commands } from 'scalable-ot-proto/gen/text_pb';
+import { Snapshot, Commands, Command } from 'scalable-ot-proto/gen/text_pb';
 import API, { CONTEXT_PATH } from './const/api';
 
 class IO {
@@ -27,8 +27,20 @@ class IO {
   }
 
   public async getOpsSince(docId: string, version: number): Promise<Commands> {
-    let res = await this.axios.get(this.getUrl_(API.OPS, docId));
+    let res = await this.axios.get(this.getUrl_(API.OPS, docId), {
+      params: {
+        'from': version
+      }
+    });
     return Commands.deserializeBinary(res.data);
+  }
+
+  public async save(docId: string, command: Command): Promise<any> {
+    await this.axios.post(this.getUrl_(API.SAVE, docId), command.serializeBinary(), {
+      headers: {
+        'Content-Type': 'application/x-protobuf',
+      },
+    });
   }
 
   private getUrl_(path: string, docId?: string): string {
