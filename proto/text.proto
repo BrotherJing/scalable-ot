@@ -21,6 +21,10 @@ message Command {
   bool init = 6;
 }
 
+message Commands {
+  repeated Command commands = 1;
+}
+
 message Operation {
   Type type = 1;
   oneof payload {
