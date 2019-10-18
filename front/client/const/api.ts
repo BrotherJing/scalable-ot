@@ -1,6 +1,7 @@
 const API = {
   CREATE: '/create',
   FETCH: '/{docId}/fetch',
+  OPS: '/{docId}/ops',
 };
 
 export default API;

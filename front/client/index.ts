@@ -10,24 +10,12 @@ const socket = new WebSocket(`ws://localhost:${OT_SERVER_PORT}`);
 socket.binaryType = 'arraybuffer';
 
 const connection = new Connection(socket);
-const doc = new Doc(connection);
-
-let promise;
 let url = new URL(document.URL);
-if (url.searchParams.has('docId')) {
-  promise = IO.getInstance().fetch(url.searchParams.get('docId') || '');
-} else {
-  promise = IO.getInstance().create().then(snapshot => {
-    url.searchParams.set('docId', snapshot.getDocid());
-    window.history.replaceState(null, 'doc', url.toString());
-    return snapshot;
-  });
-}
+const doc = new Doc(connection, url.searchParams.get('docId') || undefined);
 
-promise.then(snapshot => {
-  console.log('received snapshot: %s', JSON.stringify(snapshot.toObject()));
-  doc.init(snapshot);
-
+doc.init().then(() => {
+  url.searchParams.set('docId', doc.id as string);
+  window.history.replaceState(null, 'doc', url.toString());
   bindDoc();
 }).catch(e => {
   console.error(e);

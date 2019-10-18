@@ -1,8 +1,12 @@
+// tslint:disable:no-console
+
 import {type} from 'ot-text';
 import {Command, Operation, Snapshot} from 'scalable-ot-proto/gen/text_pb';
 import { toTextOp, fromTextOp } from './util';
 import {EventEmitter} from 'events';
 import Connection from './connection';
+import IO from './io';
+import { transformX } from './ot';
 
 class Doc extends EventEmitter {
   connection: Connection;
@@ -19,27 +23,43 @@ class Doc extends EventEmitter {
     this.data = undefined;
     this.inflightOp = undefined;
     this.pendingOps = [];
-    this.bindEvent_();
   }
 
-  init(snapshot: Snapshot) {
+  /**
+   * Fetch document snapshot or create new document,
+   * then send init command.
+   */
+  async init() {
+    let snapshot;
+    if (this.id) {
+      snapshot = await IO.getInstance().fetch(this.id);
+    } else {
+      snapshot = await IO.getInstance().create();
+    }
+    console.info('received snapshot: %s', JSON.stringify(snapshot.toObject()));
+
     this.id = snapshot.getDocid();
     this.version = snapshot.getVersion();
     this.data = snapshot.getData();
 
-    if (this.connection.open) {
-      this.sendInit_();
-    } else {
-      this.connection.on('open', () => {
-        this.sendInit_();
-      });
-    }
+    this.initConnection_();
   }
 
-  bindEvent_() {
+  /**
+   * Bind listener to message from connection, and
+   * send init command.
+   */
+  initConnection_() {
     this.connection.on('command', (command) => {
       this.handleCommand_(command);
     });
+    if (this.connection.open) {
+      this.sendInitCommand_();
+    } else {
+      this.connection.on('open', () => {
+        this.sendInitCommand_();
+      });
+    }
   }
 
   handleCommand_(command: Command) {
@@ -50,7 +70,8 @@ class Doc extends EventEmitter {
         return;
       }
     if (command.getVersion() > this.version) {
-      //TODO: catch up
+      console.info('receive higher version. Need to catch up');
+      this.catchUp_();
       return;
     }
     if (command.getVersion() < this.version) {
@@ -58,10 +79,10 @@ class Doc extends EventEmitter {
       return;
     }
     if (this.inflightOp) {
-      Doc.transformX(this.inflightOp, command);
+      transformX(this.inflightOp, command);
     }
     for (let i = 0; i < this.pendingOps.length; i++) {
-      Doc.transformX(this.pendingOps[i], command);
+      transformX(this.pendingOps[i], command);
     }
     this.version++;
     this.applyCommand_(command, false);
@@ -101,22 +122,6 @@ class Doc extends EventEmitter {
     this.emit('op', command, source);
   }
 
-  static transformX(clientCmd: Command, serverCmd: Command) {
-    if (!clientCmd.getOp() || !serverCmd.getOp()) {
-      return;
-    }
-    const clientOpText = toTextOp(clientCmd.getOp());
-    const serverOpText = toTextOp(serverCmd.getOp());
-
-    // transform client by server, server happen first
-    const clientOpTextNew = type.transform(clientOpText, serverOpText, 'left');
-    // transform server by client, server happen first
-    const serverOpTextNew = type.transform(serverOpText, clientOpText, 'right');
-
-    clientCmd.setOp(fromTextOp(clientOpTextNew));
-    serverCmd.setOp(fromTextOp(serverOpTextNew));
-  }
-
   submitOp(op: Operation, source: any) {
     if (!source) {
       source = true;
@@ -147,7 +152,7 @@ class Doc extends EventEmitter {
    * When connection open, send init message in order to
    * receive broadcast message for this document.
    */
-  private sendInit_() {
+  private sendInitCommand_() {
     if (!this.id) {
       return;
     }
@@ -156,6 +161,16 @@ class Doc extends EventEmitter {
     command.setDocid(this.id);
     command.setSid(this.connection.sid);
     this.connection.sendOp(command);
+  }
+
+  /**
+   * Fetch missing commands and handle them in sequence.
+   */
+  private async catchUp_() {
+    let commands = await IO.getInstance().getOpsSince(this.id as string, this.version);
+    for (let command of commands.getCommandsList()) {
+      this.handleCommand_(command);
+    }
   }
 }
 

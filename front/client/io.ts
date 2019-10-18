@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { API_SERVER_PORT } from './const/config';
-import { Snapshot } from 'scalable-ot-proto/gen/text_pb';
+import { Snapshot, Commands } from 'scalable-ot-proto/gen/text_pb';
 import API, { CONTEXT_PATH } from './const/api';
 
 class IO {
@@ -22,11 +22,19 @@ class IO {
   }
 
   public async fetch(docId: string): Promise<Snapshot> {
-    let response = await this.axios.get(this.getUrl_(API.FETCH).replace('{docId}', docId));
+    let response = await this.axios.get(this.getUrl_(API.FETCH, docId));
     return Snapshot.deserializeBinary(response.data);
   }
 
-  private getUrl_(path: string): string {
+  public async getOpsSince(docId: string, version: number): Promise<Commands> {
+    let res = await this.axios.get(this.getUrl_(API.OPS, docId));
+    return Commands.deserializeBinary(res.data);
+  }
+
+  private getUrl_(path: string, docId?: string): string {
+    if (docId) {
+      path = path.replace('{docId}', docId);
+    }
     return CONTEXT_PATH + path;
   }
 
