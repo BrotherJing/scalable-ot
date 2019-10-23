@@ -1,7 +1,9 @@
+import axios from "axios";
 import EventEmitter from "events";
 import { Command } from "scalable-ot-proto/gen/text_pb";
 import WebSocket from "ws";
 import Client from "./client";
+import { API_SERVER_PORT } from "./const/config";
 import DB from "./db";
 import MemoryDB from "./db/memory";
 import MongoDB from "./db/mongodb";
@@ -42,6 +44,12 @@ class Backend extends EventEmitter {
         return;
       }
       client.sendOp(command);
+    });
+
+    axios.post(`http://localhost:${API_SERVER_PORT}/doc/broadcast`, command.serializeBinary(), {
+      headers: {
+        "Content-Type": "application/x-protobuf",
+      },
     });
   }
 

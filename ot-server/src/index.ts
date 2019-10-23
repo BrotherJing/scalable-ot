@@ -8,7 +8,11 @@ const app = express();
 const server = http.createServer(app);
 const backend = new Backend();
 
-const wss = new WebSocket.Server({server});
+const wss = new WebSocket.Server({
+  path: "/socket",
+  server,
+});
+
 wss.on("connection", (ws) => {
   backend.listen(ws);
 });
