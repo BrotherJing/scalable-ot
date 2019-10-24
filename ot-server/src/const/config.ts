@@ -1,5 +1,6 @@
 export const API_SERVER_PORT = 8080;
 export const OT_SERVER_PORT = 8082;
+export const GRPC_BROADCAST_SERVICE_PORT = 9090;
 
 export const KAFKA_TOPIC_OP = "op";
 export const KAFKA_TOPIC_REVISION = "revision";

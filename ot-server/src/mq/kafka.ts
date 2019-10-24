@@ -27,7 +27,7 @@ class Kafka {
       partition: 2,
       topic: KAFKA_TOPIC_OP,
     }], {
-      autoCommit: true,
+      // autoCommit: true,
       encoding: "buffer",
     });
     this.ready = false;
@@ -55,8 +55,15 @@ class Kafka {
 
     this.opConsumer.on("message", (message) => {
       const command = Command.deserializeBinary(message.value as Buffer);
-      this.backend.submit(command, (err) => {
-        // TODO: commit
+      this.backend.submit(command, async (err, ops) => {
+        const ack = new Command();
+        ack.setDocid(command.getDocid());
+        ack.setSeq(command.getSeq());
+        ack.setSid(command.getSid());
+        // version might change during ot
+        ack.setVersion(command.getVersion());
+        await this.backend.broadcast.sendTo(command.getSid(), ops);
+        await this.backend.broadcast.sendTo(command.getSid(), [ack]);
       });
     });
   }
