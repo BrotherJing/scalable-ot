@@ -5,46 +5,66 @@ package text;
 option java_package = "com.brotherjing.proto";
 option java_outer_classname = "TextProto";
 
+service BroadcastService {
+    // send directly to one client
+    rpc SendTo (SendRequest) returns (BroadcastResponse);
+    // broadcast to all clients
+    rpc SendToAll (BroadcastRequest) returns (BroadcastResponse);
+}
+
 enum Type {
-  RETAIN = 0;
-  INSERT = 1;
-  DELETE = 2;
-  MULTI = 3;
+    RETAIN = 0;
+    INSERT = 1;
+    DELETE = 2;
+    MULTI = 3;
 }
 
 message Command {
-  string docId = 1;
-  string sid = 2;
-  int32 seq = 3;
-  int32 version = 4;
-  Operation op = 5;
-  bool init = 6;
+    string docId = 1;
+    string sid = 2;
+    int32 seq = 3;
+    int32 version = 4;
+    Operation op = 5;
+    bool init = 6;
 }
 
 message Commands {
-  repeated Command commands = 1;
+    repeated Command commands = 1;
 }
 
 message Operation {
-  Type type = 1;
-  oneof payload {
-    int32 retain = 2;
-    string insert = 3;
-    Delete delete = 4;
-    Multiple multiple = 5;
-  }
+    Type type = 1;
+    oneof payload {
+        int32 retain = 2;
+        string insert = 3;
+        Delete delete = 4;
+        Multiple multiple = 5;
+    }
 }
 
 message Delete {
-  int32 delete = 1;
+    int32 delete = 1;
 }
 
 message Multiple {
-  repeated Operation ops = 1;
+    repeated Operation ops = 1;
 }
 
 message Snapshot {
-  string docId = 1;
-  int32 version = 2;
-  string data = 3;
+    string docId = 1;
+    int32 version = 2;
+    string data = 3;
+}
+
+message SendRequest {
+    repeated Command command = 1;
+    string sid = 2;
+}
+
+message BroadcastRequest {
+    repeated Command command = 1;
+    bool excludeSelf = 2;
+}
+
+message BroadcastResponse {
 }
