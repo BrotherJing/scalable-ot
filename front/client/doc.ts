@@ -7,6 +7,7 @@ import {EventEmitter} from 'events';
 import Connection from './connection';
 import IO from './io';
 import { transformX } from './ot';
+import { SEND_OP_THROUGH_WS } from './const/config';
 
 class Doc extends EventEmitter {
   connection: Connection;
@@ -111,8 +112,12 @@ class Doc extends EventEmitter {
     op.setDocid(this.id);
     op.setSid(this.connection.sid);
     op.setVersion(this.version);
-    // this.connection.sendOp(op);
-    IO.getInstance().save(this.id, op);
+
+    if (SEND_OP_THROUGH_WS) {
+      this.connection.sendOp(op);
+    } else {
+      IO.getInstance().save(this.id, op);
+    }
   }
 
   applyCommand_(command: Command, source: any) {

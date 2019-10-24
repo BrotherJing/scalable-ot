@@ -1,11 +1,11 @@
 // tslint:disable:no-console
 
-import { WS_SERVER_PORT } from "./const/config";
+import { WS_SERVER_URL } from "./const/config";
 import Connection from "./connection";
 import Doc from "./doc";
 import StringBinding from "./string-binding";
 
-const socket = new WebSocket(`ws://localhost:${WS_SERVER_PORT}/socket`);
+const socket = new WebSocket(WS_SERVER_URL);
 socket.binaryType = 'arraybuffer';
 
 const connection = new Connection(socket);
