@@ -2,6 +2,10 @@ import { Command } from "scalable-ot-proto/gen/text_pb";
 import WebSocket from "ws";
 import Backend from "./backend";
 
+/**
+ * This class handle the interaction between client and ot server through web socket.
+ * @deprecated Client should not connect directly with ot server anymore.
+ */
 class Client {
   public backend: Backend;
   public ws: WebSocket;

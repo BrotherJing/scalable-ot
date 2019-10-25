@@ -16,23 +16,20 @@ class Backend extends EventEmitter {
   public mq: Kafka;
   public broadcast: Broadcast;
   public submitQueue: SubmitQueue;
-  public clients: {[key: string]: Client[]};
   constructor() {
     super();
     this.db = new MongoDB();
     this.mq = new Kafka(this);
-    this.broadcast = new Broadcast();
+    this.broadcast = new Broadcast(this);
     this.submitQueue = new SubmitQueue();
-    this.clients = {};
   }
 
   public listen(ws: WebSocket): Client {
-    const client = new Client(this, ws);
-    return client;
+    return this.broadcast.listen(ws);
   }
 
   public register(docId: string, client: Client) {
-    this.getClients_(docId).push(client);
+    this.broadcast.register(docId, client);
   }
 
   public submit(command: Command, callback?: (err: Exception, ops: Command[]) => void) {
@@ -40,19 +37,7 @@ class Backend extends EventEmitter {
   }
 
   public sendToAll(command: Command, excludeSelf: boolean) {
-    this.getClients_(command.getDocid()).forEach((client) => {
-      if (excludeSelf && client.sid === command.getSid()) {
-        return;
-      }
-      client.sendOp(command);
-    });
-
-    this.broadcast.sendToAll([command], excludeSelf);
-  }
-
-  private getClients_(docId: string) {
-    this.clients[docId] = this.clients[docId] || [];
-    return this.clients[docId];
+    this.broadcast.sendToAll(command, excludeSelf);
   }
 }
 
