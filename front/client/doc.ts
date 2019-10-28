@@ -13,14 +13,16 @@ class Doc extends EventEmitter {
   connection: Connection;
   id: string|undefined;
   version: number;
+  readOnly: boolean;
   data: string|undefined;
   inflightOp: Command|undefined;
   pendingOps: Command[];
-  constructor(connection: Connection, id?: string) {
+  constructor(connection: Connection, id?: string, version?: string) {
     super();
     this.connection = connection;
     this.id = id;
-    this.version = 0;
+    this.version = version ? Number(version) : 0;
+    this.readOnly = version !== undefined;
     this.data = undefined;
     this.inflightOp = undefined;
     this.pendingOps = [];
@@ -33,7 +35,7 @@ class Doc extends EventEmitter {
   async init() {
     let snapshot;
     if (this.id) {
-      snapshot = await IO.getInstance().fetch(this.id);
+      snapshot = await IO.getInstance().fetch(this.id, this.readOnly ? this.version : undefined);
     } else {
       snapshot = await IO.getInstance().create();
     }
@@ -51,6 +53,9 @@ class Doc extends EventEmitter {
    * send init command.
    */
   initConnection_() {
+    if (this.readOnly) {
+      return;
+    }
     this.connection.on('command', (command) => {
       this.handleCommand_(command);
     });

@@ -10,7 +10,9 @@ socket.binaryType = 'arraybuffer';
 
 const connection = new Connection(socket);
 let url = new URL(document.URL);
-const doc = new Doc(connection, url.searchParams.get('docId') || undefined);
+const doc = new Doc(connection,
+  url.searchParams.get('docId') || undefined,
+  url.searchParams.get('version') || undefined);
 
 doc.init().then(() => {
   url.searchParams.set('docId', doc.id as string);

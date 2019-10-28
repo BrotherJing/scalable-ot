@@ -43,7 +43,7 @@ class MongoDB extends DB {
 }
 
 function fromCommandDto(dto: any): Command {
-  return Command.deserializeBinary(dto.payload);
+  return Command.deserializeBinary((dto.payload as Binary).buffer);
 }
 
 function toCommandDto(command: Command): any {

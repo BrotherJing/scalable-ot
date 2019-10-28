@@ -21,8 +21,12 @@ class IO {
     return Snapshot.deserializeBinary(response.data);
   }
 
-  public async fetch(docId: string): Promise<Snapshot> {
-    let response = await this.axios.get(this.getUrl_(API.FETCH, docId));
+  public async fetch(docId: string, version?: number): Promise<Snapshot> {
+    let response = await this.axios.get(this.getUrl_(API.FETCH, docId), {
+      params: version !== undefined ? {
+        'version': version,
+      } : {},
+    });
     return Snapshot.deserializeBinary(response.data);
   }
 
