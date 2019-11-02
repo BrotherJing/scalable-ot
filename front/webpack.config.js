@@ -3,6 +3,7 @@ module.exports = {
 
   entry: {
       main: "./client/index.ts",
+      sheet: "./client/sheet/index.ts",
   },
 
   output: {
