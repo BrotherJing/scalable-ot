@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package base;
+
+import "google/protobuf/any.proto";
+
+option java_package = "com.brotherjing.proto";
+option java_outer_classname = "BaseProto";
+
+service BroadcastService {
+    // send directly to one client
+    rpc SendTo (SendRequest) returns (BroadcastResponse);
+    // broadcast to all clients
+    rpc SendToAll (BroadcastRequest) returns (BroadcastResponse);
+}
+
+enum DocType {
+    PLAIN_TEXT = 0;
+    JSON = 1;
+}
+
+message Command {
+    string docId = 1;
+    string sid = 2;
+    int32 seq = 3;
+    int32 version = 4;
+    google.protobuf.Any op = 5;
+    bool init = 6;
+    DocType type = 7;
+}
+
+message Commands {
+    repeated Command commands = 1;
+}
+
+message Snapshot {
+    string docId = 1;
+    int32 version = 2;
+    string data = 3;
+}
+
+message SendRequest {
+    repeated Command command = 1;
+    string sid = 2;
+}
+
+message BroadcastRequest {
+    repeated Command command = 1;
+    bool excludeSelf = 2;
+}
+
+message BroadcastResponse {
+}

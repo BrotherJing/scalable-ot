@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package json;
+
+import "base.proto";
+
+option java_package = "com.brotherjing.proto";
+option java_outer_classname = "JsonProto";
+
+message Path {
+    oneof type {
+        int32 index = 1;
+        string key = 2;
+    }
+}
+
+message Payload {
+    oneof type {
+        int32 number = 1;
+        string text = 2;
+        string json = 3;
+    }
+}
+
+enum Type {
+    LIST_INSERT = 0;
+    LIST_DELETE = 1;
+    LIST_REPLACE = 2;
+    OBJECT_INSERT = 3;
+    OBJECT_DELETE = 4;
+    OBJECT_REPLACE = 5;
+}
+
+message Operation {
+    Type type = 1;
+    repeated Path path = 2;
+    Payload li = 3;
+    Payload ld = 4;
+    Payload oi = 5;
+    Payload od = 6;
+}
+
+message Operations {
+    repeated Operation ops = 1;
+}

@@ -15,4 +15,4 @@ node ./node_modules/.bin/grpc_tools_node_protoc \
     --js_out="import_style=commonjs,binary:${OUT_DIR}" \
     --ts_out="service=grpc-node:${OUT_DIR}" \
     --grpc_out="${OUT_DIR}" \
-    text.proto
+    base.proto text.proto json.proto

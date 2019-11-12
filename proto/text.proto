@@ -2,34 +2,16 @@ syntax = "proto3";
 
 package text;
 
+import "base.proto";
+
 option java_package = "com.brotherjing.proto";
 option java_outer_classname = "TextProto";
-
-service BroadcastService {
-    // send directly to one client
-    rpc SendTo (SendRequest) returns (BroadcastResponse);
-    // broadcast to all clients
-    rpc SendToAll (BroadcastRequest) returns (BroadcastResponse);
-}
 
 enum Type {
     RETAIN = 0;
     INSERT = 1;
     DELETE = 2;
     MULTI = 3;
-}
-
-message Command {
-    string docId = 1;
-    string sid = 2;
-    int32 seq = 3;
-    int32 version = 4;
-    Operation op = 5;
-    bool init = 6;
-}
-
-message Commands {
-    repeated Command commands = 1;
 }
 
 message Operation {
@@ -48,23 +30,4 @@ message Delete {
 
 message Multiple {
     repeated Operation ops = 1;
-}
-
-message Snapshot {
-    string docId = 1;
-    int32 version = 2;
-    string data = 3;
-}
-
-message SendRequest {
-    repeated Command command = 1;
-    string sid = 2;
-}
-
-message BroadcastRequest {
-    repeated Command command = 1;
-    bool excludeSelf = 2;
-}
-
-message BroadcastResponse {
 }
