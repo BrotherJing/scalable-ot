@@ -1,5 +1,5 @@
 import EventEmitter from "events";
-import { Command } from "scalable-ot-proto/gen/text_pb";
+import { Command } from "scalable-ot-proto";
 import WebSocket from "ws";
 import Broadcast from "./broadcast";
 import Client from "./client";

@@ -1,7 +1,7 @@
 // tslint:disable:no-console
 
 import {Binary, Db, MongoClient} from "mongodb";
-import { Command } from "scalable-ot-proto/gen/text_pb";
+import { Command } from "scalable-ot-proto";
 import DB from ".";
 import { DB_NAME, MONGODB_PORT } from "../const/config";
 

@@ -1,4 +1,4 @@
-import { Command } from "scalable-ot-proto/gen/text_pb";
+import { Command } from "scalable-ot-proto";
 
 class DB {
   public async getOps(docId: string, from: number): Promise<Command[]> {

@@ -1,4 +1,4 @@
-import { Command } from "scalable-ot-proto/gen/text_pb";
+import { Command } from "scalable-ot-proto";
 import DB from "./index";
 
 class MemoryDB extends DB {

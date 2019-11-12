@@ -1,7 +1,7 @@
 // tslint:disable:no-console
 
 import * as kafka from "kafka-node";
-import { Command } from "scalable-ot-proto/gen/text_pb";
+import { Command } from "scalable-ot-proto";
 import Backend from "../backend";
 import {KAFKA_TOPIC_OP, KAFKA_TOPIC_REVISION} from "../const/config";
 

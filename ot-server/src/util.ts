@@ -1,4 +1,6 @@
-import {Command, Delete, Multiple, Operation, Type} from "scalable-ot-proto/gen/text_pb";
+import {Any} from "google-protobuf/google/protobuf/any_pb";
+import { DocType, DocTypeMap } from "scalable-ot-proto";
+import {Delete, Multiple, Operation, Type} from "scalable-ot-proto/gen/text_pb";
 
 function toTextOpSingle_(op: Operation): any {
   switch (op.getType()) {
@@ -20,7 +22,7 @@ function toTextOpSingle_(op: Operation): any {
   }
 }
 
-export function toTextOp(op: Operation|undefined): any[] {
+function toTextOp_(op: Operation|null): any[] {
   if (!op) {
     return [];
   }
@@ -60,7 +62,7 @@ function fromTextOpSingle_(textOp: any): Operation {
   return res;
 }
 
-export function fromTextOp(textOp: any[]): Operation {
+function fromTextOp_(textOp: any[]): Operation {
   if (textOp.length === 1) {
     return fromTextOpSingle_(textOp[0]);
   }
@@ -70,4 +72,23 @@ export function fromTextOp(textOp: any[]): Operation {
   multiple.setOpsList(textOp.map(fromTextOpSingle_));
   res.setMultiple(multiple);
   return res;
+}
+
+export function fromProto(op: Any, docType: DocTypeMap[keyof DocTypeMap]): any[] {
+  if (docType === DocType.PLAIN_TEXT) {
+    return toTextOp_(op.unpack(Operation.deserializeBinary, "text.Operation"));
+  } else if (docType === DocType.JSON) {
+    // TODO: json
+  }
+  return [];
+}
+
+export function toProto(ops: any[], docType: DocTypeMap[keyof DocTypeMap]): Any {
+  const proto = new Any();
+  if (docType === DocType.PLAIN_TEXT) {
+    proto.pack(fromTextOp_(ops).serializeBinary(), "text.Operation");
+  } else if (docType === DocType.JSON) {
+    // TODO: json
+  }
+  return proto;
 }

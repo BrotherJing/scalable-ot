@@ -1,4 +1,4 @@
-import { Command } from "scalable-ot-proto/gen/text_pb";
+import { Command } from "scalable-ot-proto";
 import Backend from "./backend";
 import Exception from "./model/exception";
 import {transform} from "./ot";
