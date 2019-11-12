@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { API_SERVER_PORT } from './const/config';
-import { Snapshot, Commands, Command } from 'scalable-ot-proto/gen/text_pb';
+import { Snapshot, Commands, Command } from 'scalable-ot-proto/gen/base_pb';
 import API, { CONTEXT_PATH } from './const/api';
 
 class IO {

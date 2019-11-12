@@ -1,6 +1,6 @@
 import {EventEmitter} from 'events';
 import short from 'short-uuid';
-import { Command } from 'scalable-ot-proto/gen/text_pb';
+import { Command } from 'scalable-ot-proto/gen/base_pb';
 
 class Connection extends EventEmitter {
   ws: WebSocket;

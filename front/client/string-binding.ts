@@ -1,6 +1,8 @@
 import TextDiffBinding from "text-diff-binding";
 import Doc from "./doc";
-import { Operation, Type, Delete, Multiple, Command } from "scalable-ot-proto/gen/text_pb";
+import {Any} from 'google-protobuf/google/protobuf/any_pb';
+import { Operation, Type, Delete, Multiple } from "scalable-ot-proto/gen/text_pb";
+import { Command } from 'scalable-ot-proto/gen/base_pb';
 
 class StringBinding extends TextDiffBinding {
   doc: Doc;
@@ -27,10 +29,13 @@ class StringBinding extends TextDiffBinding {
     if (!op) {
       return;
     }
-    this.exec_(op);
+    this.exec_(op.unpack(Operation.deserializeBinary, 'text.Operation'));
   }
 
-  exec_(op: Operation) {
+  exec_(op: Operation|null) {
+    if (!op) {
+      return;
+    }
     let ops;
     if (op.hasMultiple()) {
       let multiple = op.getMultiple();
@@ -74,7 +79,7 @@ class StringBinding extends TextDiffBinding {
     op.setType(Type.INSERT);
     op.setInsert(text);
     ops.push(op);
-    this.doc.submitOp(this.createMultiOp_(ops), this);
+    this.doc.submitOp(this.generalize_(this.createMultiOp_(ops)), this);
   }
 
   _remove(index: number, text: string) {
@@ -88,7 +93,7 @@ class StringBinding extends TextDiffBinding {
     del.setDelete(text.length);
     op.setDelete(del);
     ops.push(op);
-    this.doc.submitOp(this.createMultiOp_(ops), this);
+    this.doc.submitOp(this.generalize_(this.createMultiOp_(ops)), this);
   }
 
   createRetainOp_(index: number): Operation {
@@ -108,6 +113,12 @@ class StringBinding extends TextDiffBinding {
     multi.setOpsList(ops);
     res.setMultiple(multi);
     return res;
+  }
+
+  generalize_(op: Operation): Any {
+    let any = new Any();
+    any.pack(op.serializeBinary(), 'text.Operation');
+    return any;
   }
 }
 

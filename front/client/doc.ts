@@ -1,8 +1,9 @@
 // tslint:disable:no-console
 
 import {type} from 'ot-text';
-import {Command, Operation, Snapshot} from 'scalable-ot-proto/gen/text_pb';
-import { toTextOp, fromTextOp } from './util';
+import {Command, DocTypeMap} from 'scalable-ot-proto/gen/base_pb';
+import {Any} from 'google-protobuf/google/protobuf/any_pb';
+import { fromProto, toProto } from './util';
 import {EventEmitter} from 'events';
 import Connection from './connection';
 import IO from './io';
@@ -11,15 +12,17 @@ import { SEND_OP_THROUGH_WS } from './const/config';
 
 class Doc extends EventEmitter {
   connection: Connection;
+  type: DocTypeMap[keyof DocTypeMap];
   id: string|undefined;
   version: number;
   readOnly: boolean;
   data: string|undefined;
   inflightOp: Command|undefined;
   pendingOps: Command[];
-  constructor(connection: Connection, id?: string, version?: string) {
+  constructor(connection: Connection, type: DocTypeMap[keyof DocTypeMap], id?: string, version?: string) {
     super();
     this.connection = connection;
+    this.type = type;
     this.id = id;
     this.version = version ? Number(version) : 0;
     this.readOnly = version !== undefined;
@@ -129,16 +132,16 @@ class Doc extends EventEmitter {
     if (this.data == null) {
       return;
     }
-    this.data = type.apply(this.data, toTextOp(command.getOp()));
+    this.data = type.apply(this.data, fromProto(command.getOp(), this.type));
     this.emit('op', command, source);
   }
 
-  submitOp(op: Operation, source: any) {
+  submitOp(op: Any, source: any) {
     if (!source) {
       source = true;
     }
     let command = new Command();
-    command.setOp(fromTextOp(type.normalize(toTextOp(op))));
+    command.setOp(toProto(type.normalize(fromProto(op, this.type)), this.type));
     if (this.tryCompose_(command)) {
       this.applyCommand_(command, source);
       return;
@@ -155,7 +158,9 @@ class Doc extends EventEmitter {
     if (!last) {
       return false;
     }
-    last.setOp(fromTextOp(type.compose(toTextOp(last.getOp()), toTextOp(command.getOp()))));
+    last.setOp(toProto(type.compose(
+      fromProto(last.getOp(), this.type),
+      fromProto(command.getOp(), this.type)), this.type));
     return true;
   }
 
