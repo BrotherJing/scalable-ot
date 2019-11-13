@@ -3,6 +3,7 @@ import 'handsontable/dist/handsontable.full.css';
 import Connection from "../connection";
 import Doc from "../doc";
 import { DocType } from "scalable-ot-proto/gen/base_pb";
+import SheetBinding from "./sheet-bindng";
 
 const connection = new Connection();
 let url = new URL(document.URL);
@@ -14,7 +15,7 @@ const doc = new Doc(connection,
 doc.init().then(() => {
   url.searchParams.set('docId', doc.id as string);
   window.history.replaceState(null, 'doc', url.toString());
-  hot.loadData(doc.data);
+  bindSheet();
 }).catch(e => {
   console.error(e);
 });
@@ -29,9 +30,9 @@ const hot = new Handsontable(container, {
   /** enable row/column resize */
   manualColumnResize: true,
   manualRowResize: true,
-  /** auto expand row/col */
-  minSpareCols: 1,
-  minSpareRows: 1,
+  /** disable auto expand row/col */
+  minSpareCols: 0,
+  minSpareRows: 0,
   /** enable rol/column insert/remove */
   contextMenu: [
     'row_above',
@@ -44,14 +45,10 @@ const hot = new Handsontable(container, {
   ],
 });
 
-hot.addHook('afterChange', (changes, source) => {
-  if (source !== 'edit') {
-    return;
-  }
-  changes!.forEach(([row, prop, oldVal, newVal]) => {
-    console.info(`row ${row} prop ${prop}: ${oldVal} -> ${newVal}`);
-  });
-});
+function bindSheet() {
+  let binding = new SheetBinding(doc, hot);
+  binding.setup();
+}
 
 // row/column operation
 // hot.alter('insert_row', 1, 2);
@@ -83,5 +80,3 @@ button.addEventListener('click', function(event: Event) {
 
   hot.render();
 });
-
-let hooks = Handsontable.hooks.getRegistered();

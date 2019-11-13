@@ -8,6 +8,10 @@ const registry = {
   [DocType.JSON]: jsonType,
 };
 
+export function getOtType(docType: DocTypeMap[keyof DocTypeMap]): any {
+  return registry[docType];
+}
+
 export function transformX(clientCmd: Command, serverCmd: Command) {
   if (!clientCmd.getOp() || !serverCmd.getOp()) {
     return;

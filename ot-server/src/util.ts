@@ -121,6 +121,7 @@ function toJsonOp_(ops: JsonOperations|null): any[] {
     if (op.hasOd()) {
       res.od = unwrapPayload_(op.getOd()!);
     }
+    return res;
   });
 }
 

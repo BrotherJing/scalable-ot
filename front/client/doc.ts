@@ -1,13 +1,12 @@
 // tslint:disable:no-console
 
-import {type} from 'ot-text';
 import {Command, DocTypeMap} from 'scalable-ot-proto/gen/base_pb';
 import {Any} from 'google-protobuf/google/protobuf/any_pb';
 import { fromProto, toProto } from './util';
 import {EventEmitter} from 'events';
 import Connection from './connection';
 import IO from './io';
-import { transformX, deserializeSnapshot } from './ot';
+import { transformX, deserializeSnapshot, getOtType } from './ot';
 import { SEND_OP_THROUGH_WS } from './const/config';
 
 class Doc extends EventEmitter {
@@ -132,7 +131,7 @@ class Doc extends EventEmitter {
     if (this.data == null) {
       return;
     }
-    this.data = type.apply(this.data, fromProto(command.getOp(), this.type));
+    this.data = getOtType(this.type).apply(this.data, fromProto(command.getOp(), this.type));
     this.emit('op', command, source);
   }
 
@@ -141,7 +140,7 @@ class Doc extends EventEmitter {
       source = true;
     }
     let command = new Command();
-    command.setOp(toProto(type.normalize(fromProto(op, this.type)), this.type));
+    command.setOp(toProto(getOtType(this.type).normalize(fromProto(op, this.type)), this.type));
     if (this.tryCompose_(command)) {
       this.applyCommand_(command, source);
       return;
@@ -158,7 +157,7 @@ class Doc extends EventEmitter {
     if (!last) {
       return false;
     }
-    last.setOp(toProto(type.compose(
+    last.setOp(toProto(getOtType(this.type).compose(
       fromProto(last.getOp(), this.type),
       fromProto(command.getOp(), this.type)), this.type));
     return true;
