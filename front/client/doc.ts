@@ -7,7 +7,7 @@ import { fromProto, toProto } from './util';
 import {EventEmitter} from 'events';
 import Connection from './connection';
 import IO from './io';
-import { transformX } from './ot';
+import { transformX, deserializeSnapshot } from './ot';
 import { SEND_OP_THROUGH_WS } from './const/config';
 
 class Doc extends EventEmitter {
@@ -16,7 +16,7 @@ class Doc extends EventEmitter {
   id: string|undefined;
   version: number;
   readOnly: boolean;
-  data: string|undefined;
+  data: any;
   inflightOp: Command|undefined;
   pendingOps: Command[];
   constructor(connection: Connection, type: DocTypeMap[keyof DocTypeMap], id?: string, version?: string) {
@@ -40,13 +40,13 @@ class Doc extends EventEmitter {
     if (this.id) {
       snapshot = await IO.getInstance().fetch(this.id, this.readOnly ? this.version : undefined);
     } else {
-      snapshot = await IO.getInstance().create();
+      snapshot = await IO.getInstance().create(this.type);
     }
     console.info('received snapshot: %s', JSON.stringify(snapshot.toObject()));
 
     this.id = snapshot.getDocid();
     this.version = snapshot.getVersion();
-    this.data = snapshot.getData();
+    this.data = deserializeSnapshot(snapshot.getData(), this.type);
 
     this.initConnection_();
   }

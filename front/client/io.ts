@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { API_SERVER_PORT } from './const/config';
-import { Snapshot, Commands, Command } from 'scalable-ot-proto/gen/base_pb';
+import { Snapshot, Commands, Command, DocType, DocTypeMap } from 'scalable-ot-proto/gen/base_pb';
 import API, { CONTEXT_PATH } from './const/api';
 
 class IO {
@@ -16,8 +16,14 @@ class IO {
     });
   }
 
-  public async create(): Promise<Snapshot> {
-    let response = await this.axios.post(this.getUrl_(API.CREATE));
+  public async create(docType?: DocTypeMap[keyof DocTypeMap]): Promise<Snapshot> {
+    let url;
+    if (docType === DocType.JSON) {
+      url = this.getUrl_(API.CREATE_SHEET);
+    } else {
+      url = this.getUrl_(API.CREATE);
+    }
+    let response = await this.axios.post(url);
     return Snapshot.deserializeBinary(response.data);
   }
 

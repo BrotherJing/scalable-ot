@@ -1,4 +1,4 @@
-import { Command, DocType } from "scalable-ot-proto/gen/base_pb";
+import { Command, DocType, DocTypeMap } from "scalable-ot-proto/gen/base_pb";
 import { fromProto, toProto } from "./util";
 import { type } from "ot-text";
 import { type as jsonType } from 'ot-json0';
@@ -23,4 +23,11 @@ export function transformX(clientCmd: Command, serverCmd: Command) {
 
   clientCmd.setOp(toProto(clientOpTextNew, clientCmd.getType()));
   serverCmd.setOp(toProto(serverOpTextNew, clientCmd.getType()));
+}
+
+export function deserializeSnapshot(data: any, docType: DocTypeMap[keyof DocTypeMap]): any {
+  if (docType === DocType.JSON) {
+    return JSON.parse(data);
+  }
+  return data;
 }

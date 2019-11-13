@@ -1,16 +1,27 @@
 import Handsontable from "handsontable";
 import 'handsontable/dist/handsontable.full.css';
+import Connection from "../connection";
+import Doc from "../doc";
+import { DocType } from "scalable-ot-proto/gen/base_pb";
 
-const data = [
-  ['', 'Tesla', 'Volvo', 'Toyota', 'Ford'],
-  ['2019', 10, 11, 12, 13],
-  ['2020', 20, 11, 14, 13],
-  ['2021', 30, 15, 12, 13]
-];
+const connection = new Connection();
+let url = new URL(document.URL);
+const doc = new Doc(connection,
+  DocType.JSON,
+  url.searchParams.get('docId') || undefined,
+  url.searchParams.get('version') || undefined);
+
+doc.init().then(() => {
+  url.searchParams.set('docId', doc.id as string);
+  window.history.replaceState(null, 'doc', url.toString());
+  hot.loadData(doc.data);
+}).catch(e => {
+  console.error(e);
+});
 
 const container = document.getElementById('sheet') as Element;
 const hot = new Handsontable(container, {
-  data: data,
+  data: [],
   rowHeaders: true,
   colHeaders: true,
   licenseKey: 'non-commercial-and-evaluation',
@@ -31,6 +42,15 @@ const hot = new Handsontable(container, {
     'remove_row',
     'remove_col',
   ],
+});
+
+hot.addHook('afterChange', (changes, source) => {
+  if (source !== 'edit') {
+    return;
+  }
+  changes!.forEach(([row, prop, oldVal, newVal]) => {
+    console.info(`row ${row} prop ${prop}: ${oldVal} -> ${newVal}`);
+  });
 });
 
 // row/column operation

@@ -1,14 +1,21 @@
 import {EventEmitter} from 'events';
 import short from 'short-uuid';
 import { Command } from 'scalable-ot-proto/gen/base_pb';
+import {
+  OT_WS_SERVER_URL,
+  WS_SERVER_URL,
+  SEND_OP_THROUGH_WS,
+} from "./const/config";
 
 class Connection extends EventEmitter {
   ws: WebSocket;
   sid: string;
   seq: number;
   open: boolean;
-  constructor(ws: WebSocket) {
+  constructor() {
     super();
+    const ws = new WebSocket(SEND_OP_THROUGH_WS ? OT_WS_SERVER_URL : WS_SERVER_URL);
+    ws.binaryType = 'arraybuffer';
     this.ws = ws;
     this.sid = short.generate();
     this.seq = 0;
