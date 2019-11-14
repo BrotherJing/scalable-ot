@@ -140,6 +140,7 @@ class Doc extends EventEmitter {
       source = true;
     }
     let command = new Command();
+    command.setType(this.type);
     command.setOp(toProto(getOtType(this.type).normalize(fromProto(op, this.type)), this.type));
     if (this.tryCompose_(command)) {
       this.applyCommand_(command, source);
