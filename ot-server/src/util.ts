@@ -95,8 +95,9 @@ function wrapPayload_(payload: any): Payload {
     res.setNumber(payload);
   } else if (typeof payload === "string") {
     res.setText(payload);
+  } else {
+    res.setJson(JSON.stringify(payload));
   }
-  res.setJson(JSON.stringify(payload));
   return res;
 }
 

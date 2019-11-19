@@ -18,7 +18,11 @@ class SheetBinding {
   }
 
   bindEvent_() {
-    this.hot.addHook('afterChange', this.onAfterChange_);
+    this.hot.addHook('beforeChange', this.onBeforeChange_);
+    this.hot.addHook('beforeCreateCol', this.onBeforeCreateCol_);
+    this.hot.addHook('beforeCreateRow', this.onBeforeCreateRow_);
+    this.hot.addHook('beforeRemoveCol', this.onBeforeRemoveCol_);
+    this.hot.addHook('beforeRemoveRow', this.onBeforeRemoveRow_);
     this.doc.on('op', this.onOp_);
   }
 
@@ -30,7 +34,7 @@ class SheetBinding {
     this.hot.loadData(this.doc.data);
   }
 
-  onAfterChange_ = (changes: Handsontable.CellChange[]|null, source: Handsontable.ChangeSource) => {
+  onBeforeChange_ = (changes: Handsontable.CellChange[]|null, source: Handsontable.ChangeSource) => {
     if (source !== 'edit') {
       return;
     }
@@ -50,6 +54,67 @@ class SheetBinding {
       console.info(`row ${row} prop ${prop}: ${oldVal} -> ${newVal}`);
     });
     this.doc.submitOp(toProto(ops, DocType.JSON), this);
+    return false;
+  }
+
+  onBeforeCreateCol_ = (index: number, amount: number, source?: Handsontable.ChangeSource) => {
+    let ops = [] as any[];
+    for (let i = 0; i < this.hot.countRows(); i++) {
+      for (let j = 0; j < amount; j++) {
+        ops.push({
+          p: [i, index + j],
+          li: '',
+        });
+      }
+    }
+    this.doc.submitOp(toProto(ops, DocType.JSON), this);
+    return false;
+  }
+
+  onBeforeCreateRow_ = (index: number, amount: number, source?: Handsontable.ChangeSource) => {
+    let ops = [] as any[];
+    let row = [];
+    for (let j = 0; j < this.hot.countCols(); j++) {
+      row.push('');
+    }
+    for (let j = 0; j < amount; j++) {
+      ops.push({
+        p: [index + j],
+        li: row,
+      });
+    }
+    this.doc.submitOp(toProto(ops, DocType.JSON), this);
+    return false;
+  }
+
+  onBeforeRemoveCol_ = (index: number, amount: number) => {
+    let ops = [] as any[];
+    for (let i = 0; i < this.hot.countRows(); i++) {
+      for (let j = 0; j < amount; j++) {
+        ops.push({
+          p: [i, index],
+          ld: '',
+        });
+      }
+    }
+    this.doc.submitOp(toProto(ops, DocType.JSON), this);
+    return false;
+  }
+
+  onBeforeRemoveRow_ = (index: number, amount: number) => {
+    let ops = [] as any[];
+    let row = [];
+    for (let j = 0; j < this.hot.countCols(); j++) {
+      row.push('');
+    }
+    for (let j = 0; j < amount; j++) {
+      ops.push({
+        p: [index],
+        ld: row,
+      });
+    }
+    this.doc.submitOp(toProto(ops, DocType.JSON), this);
+    return false;
   }
 }
 
