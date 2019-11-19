@@ -23,6 +23,8 @@ class SheetBinding {
     this.hot.addHook('beforeCreateRow', this.onBeforeCreateRow_);
     this.hot.addHook('beforeRemoveCol', this.onBeforeRemoveCol_);
     this.hot.addHook('beforeRemoveRow', this.onBeforeRemoveRow_);
+    this.hot.addHook('beforeCut', this.onBeforeCut_);
+    this.hot.addHook('beforePaste', this.onBeforePaste_);
     this.doc.on('op', this.onOp_);
   }
 
@@ -112,6 +114,54 @@ class SheetBinding {
         p: [index],
         ld: row,
       });
+    }
+    this.doc.submitOp(toProto(ops, DocType.JSON), this);
+    return false;
+  }
+
+  onBeforeCut_ = (data: any[][], coords: Handsontable.plugins.RangeType[]) => {
+    let ops = [] as any[];
+    for (let coord of coords) {
+      for (let i = coord.startRow; i <= coord.endRow; i++) {
+        for (let j = coord.startCol; j <= coord.endCol; j++) {
+          ops.push({
+            p: [i, j],
+            li: '',
+            ld: '',
+          });
+        }
+      }
+    }
+    this.doc.submitOp(toProto(ops, DocType.JSON), this);
+    return true;
+  }
+
+  onBeforePaste_ = (data: any[][], coords: Handsontable.plugins.RangeType[]) => {
+    let rows = this.hot.countRows();
+    let cols = this.hot.countCols();
+    let dataRows = data.length;
+    let dataCols = data[0].length;
+    let ops = [] as any[];
+    for (let coord of coords) {
+      let repeatX = Math.max((coord.endCol - coord.startCol + 1) / dataCols, 1);
+      let repeatY = Math.max((coord.endRow - coord.startRow + 1) / dataRows, 1);
+      for (let i = 0; i < repeatY; i++) {
+        for (let j = 0; j < repeatX; j++) {
+          for (let ii = 0; ii < dataRows; ii++) {
+            let row = coord.startRow + i * dataRows + ii;
+            if (row >= rows) continue;
+            for (let jj = 0; jj < dataCols; jj++) {
+              let col = coord.startCol + j * dataCols + jj;
+              if (col >= cols) continue;
+              ops.push({
+                p: [row, col],
+                li: data[ii][jj],
+                ld: '',
+              });
+            }
+          }
+        }
+      }
     }
     this.doc.submitOp(toProto(ops, DocType.JSON), this);
     return false;
