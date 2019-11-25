@@ -1,13 +1,11 @@
 // tslint:disable:no-console
 
-import Connection from "./connection";
 import Doc from "./doc";
 import StringBinding from "./string-binding";
 import { DocType } from "scalable-ot-proto/gen/base_pb";
 
-const connection = new Connection();
 let url = new URL(document.URL);
-const doc = new Doc(connection,
+const doc = new Doc(
   DocType.PLAIN_TEXT,
   url.searchParams.get('docId') || undefined,
   url.searchParams.get('version') || undefined);

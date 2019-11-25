@@ -4,6 +4,7 @@ const API = {
   FETCH: '/{docId}/fetch',
   OPS: '/{docId}/ops',
   SAVE: '/{docId}/save',
+  CHANNEL: '/{docId}/channel',
 };
 
 export default API;

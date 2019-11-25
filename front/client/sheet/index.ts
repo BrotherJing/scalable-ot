@@ -1,13 +1,11 @@
 import Handsontable from "handsontable";
 import 'handsontable/dist/handsontable.full.css';
-import Connection from "../connection";
 import Doc from "../doc";
 import { DocType } from "scalable-ot-proto/gen/base_pb";
 import SheetBinding from "./sheet-bindng";
 
-const connection = new Connection();
 let url = new URL(document.URL);
-const doc = new Doc(connection,
+const doc = new Doc(
   DocType.JSON,
   url.searchParams.get('docId') || undefined,
   url.searchParams.get('version') || undefined);

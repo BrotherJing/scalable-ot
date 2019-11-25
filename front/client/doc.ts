@@ -10,7 +10,7 @@ import { transformX, deserializeSnapshot, getOtType } from './ot';
 import { SEND_OP_THROUGH_WS } from './const/config';
 
 class Doc extends EventEmitter {
-  connection: Connection;
+  connection: Connection|undefined;
   type: DocTypeMap[keyof DocTypeMap];
   id: string|undefined;
   version: number;
@@ -18,9 +18,9 @@ class Doc extends EventEmitter {
   data: any;
   inflightOp: Command|undefined;
   pendingOps: Command[];
-  constructor(connection: Connection, type: DocTypeMap[keyof DocTypeMap], id?: string, version?: string) {
+  constructor(type: DocTypeMap[keyof DocTypeMap], id?: string, version?: string) {
     super();
-    this.connection = connection;
+    this.connection = undefined;
     this.type = type;
     this.id = id;
     this.version = version ? Number(version) : 0;
@@ -47,17 +47,19 @@ class Doc extends EventEmitter {
     this.version = snapshot.getVersion();
     this.data = deserializeSnapshot(snapshot.getData(), this.type);
 
-    this.initConnection_();
+    await this.initConnection_();
   }
 
   /**
    * Bind listener to message from connection, and
    * send init command.
    */
-  initConnection_() {
+  async initConnection_() {
     if (this.readOnly) {
       return;
     }
+    let wsChannel = await IO.getInstance().getWSChannel(this.id!);
+    this.connection = new Connection(wsChannel);
     this.connection.on('command', (command) => {
       this.handleCommand_(command);
     });
@@ -114,14 +116,14 @@ class Doc extends EventEmitter {
     this.inflightOp = this.pendingOps.shift() as Command;
     let op = this.inflightOp;
     if (op.getSeq() === 0) {
-      op.setSeq(this.connection.seq++);
+      op.setSeq(this.connection!.seq++);
     }
     op.setDocid(this.id);
-    op.setSid(this.connection.sid);
+    op.setSid(this.connection!.sid);
     op.setVersion(this.version);
 
     if (SEND_OP_THROUGH_WS) {
-      this.connection.sendOp(op);
+      this.connection!.sendOp(op);
     } else {
       IO.getInstance().save(this.id, op);
     }
@@ -175,8 +177,8 @@ class Doc extends EventEmitter {
     let command = new Command();
     command.setInit(true);
     command.setDocid(this.id);
-    command.setSid(this.connection.sid);
-    this.connection.sendOp(command);
+    command.setSid(this.connection!.sid);
+    this.connection!.sendOp(command);
   }
 
   /**

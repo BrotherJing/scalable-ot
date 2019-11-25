@@ -53,6 +53,16 @@ class IO {
     });
   }
 
+  public async getWSChannel(docId: string): Promise<string> {
+    let res = await this.axios.get(this.getUrl_(API.CHANNEL, docId), {
+      responseType: 'text',
+      headers: {
+        'Accept': 'text/plain',
+      },
+    });
+    return res.data;
+  }
+
   private getUrl_(path: string, docId?: string): string {
     if (docId) {
       path = path.replace('{docId}', docId);
