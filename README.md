@@ -17,6 +17,12 @@ Spreadsheet
 
 <img src="https://brotherjing-static.s3-ap-northeast-1.amazonaws.com/img/scalable-ot.png" alt="arch" width="400"/>
 
+1. Clients send operations through API.
+2. Operations are pushed into MQ, partitioned by document id.
+3. OT server receives operations of same document sequentially and performs conflict solving.
+4. Broadcast server sends conflict-free operations to clients.
+5. Conflict-free operations are pushed into another MQ(or db stream), trigger a consumer which apply them on document snapshot sequentially.
+
 ### Project Structures
 
 ```
